@@ -1,0 +1,40 @@
+[tool.poetry]
+name = "python-mpris-hassbridge"
+version = "0.0.1"
+description = "Control your Home Assistant media players using MPRIS"
+license = "GPL-3.0-or-later"
+authors = ["Teemu R. <tpr@iki.fi>"]
+repository = "https://github.com/rytilahti/homeassistant-mpris-bridge"
+readme = "README.md"
+packages = [
+  { include = "hassbridge" }
+]
+
+[tool.poetry.scripts]
+hassbridge = "hassbridge.cli:cli"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+click = "^7"
+importlib-metadata = "*"
+websockets = "*"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.3"
+pytest-azurepipelines = "^0.8.0"
+pre-commit = "*"
+toml = "*"
+tox = "*"
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 88
+known_first_party = "hassbridge"
+known_third_party = ["asyncclick", "dbus_next"]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

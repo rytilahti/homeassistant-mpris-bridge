@@ -1,0 +1,6 @@
+[flake8]
+exclude = .git,.tox,__pycache__
+max-line-length = 88
+# F722, F821 are necessary due to "funny" use of typehints for dbus types
+ignore = D105, D107, E203, E501, W503, F722, F821
+max-complexity = 18

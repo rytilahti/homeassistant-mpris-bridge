@@ -1,0 +1,1 @@
+"""Homeassistant-MPRIS bridge."""

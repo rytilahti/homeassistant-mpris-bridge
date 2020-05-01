@@ -88,6 +88,14 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 version = "0.4.3"
 
 [[package]]
+category = "main"
+description = "A zero-dependency DBus library for Python with asyncio support"
+name = "dbus-next"
+optional = false
+python-versions = ">=3.6.0"
+version = "0.1.3"
+
+[[package]]
 category = "dev"
 description = "Distribution utilities"
 name = "distlib"
@@ -355,7 +363,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "0c9c18548b51c7ec98e368e5f212912634e888e11d1d2588a094a64fe32c7172"
+content-hash = "9b0fa4d8790eb63eedfb94fb8713e7b9d78c2421988622fa55fee92eed03b498"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -389,6 +397,10 @@ cfgv = [
 colorama = [
     {file = "colorama-0.4.3-py2.py3-none-any.whl", hash = "sha256:7d73d2a99753107a36ac6b455ee49046802e59d9d076ef8e47b61499fa29afff"},
     {file = "colorama-0.4.3.tar.gz", hash = "sha256:e96da0d330793e2cb9485e9ddfd918d456036c7149416295932478192f4436a1"},
+]
+dbus-next = [
+    {file = "dbus_next-0.1.3-py3-none-any.whl", hash = "sha256:d48bf457f23a5b51c3a9199b9bf3cf76c764bb639bb6d0ab410d13572b853b66"},
+    {file = "dbus_next-0.1.3.tar.gz", hash = "sha256:4dd9097778224c69228f7f2a0f52e9b13ec2c75e87974ad312525c927835e8fb"},
 ]
 distlib = [
     {file = "distlib-0.3.0.zip", hash = "sha256:2e166e231a26b36d6dfe35a48c4464346620f8645ed0ace01ee31822b288de21"},

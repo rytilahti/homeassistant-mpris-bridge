@@ -188,19 +188,24 @@ class PlayerInterface(ServiceInterface):
     @dbus_property(access=PropertyAccess.READ)
     def Metadata(self) -> "a{sv}":  # type: ignore
         """Return the metadata used by MPRIS players to display what is being played."""
-        cover_url = (
-            f'{self.hass_interface.http_endpoint}{self.data.get("entity_picture", "")}'
-        )
+        cover_url = f'{self.hass_interface.http_endpoint}{self.data.get("entity_picture", None)}'
+        duration = self.data.get("media_duration", 0)
+        _LOGGER.debug("Got duration %s", duration)
+        duration = int(duration) * 1_000_000
         return {
             # we do not support playlists, so we don't care about track ids.
             "mpris:trackid": Variant("o", f"/fi/iki/tpr/hassbridge/trackiddummy"),
             "mpris:artUrl": Variant("s", cover_url),
-            "mpris:length": Variant(
-                "x", self.data.get("media_duration", 0) * 1_000_000
+            "mpris:length": Variant("x", duration),
+            "xesam:artist": Variant(
+                "s", self.data.get("media_artist", "<unavailable artist>")
             ),
-            "xesam:artist": Variant("s", self.data.get("media_artist", "-")),
-            "xesam:album": Variant("s", self.data.get("media_album_name", "")),
-            "xesam:title": Variant("s", self.data.get("media_title", "")),
+            "xesam:album": Variant(
+                "s", self.data.get("media_album_name", "<unavailable album>")
+            ),
+            "xesam:title": Variant(
+                "s", self.data.get("media_title", "<unavailable title>")
+            ),
         }
 
     # Volume — d (Volume)

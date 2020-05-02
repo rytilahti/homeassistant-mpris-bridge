@@ -41,7 +41,7 @@ $ hassbridge --endpoint http://192.168.123.123:8123 --token <long lived token>
 Instead of using `--endpoint` and `--token` you can also define the following environment variables to achieve the same:
 
 ```
-export HASSBRIDGE_ENDPOINT="192.168.123.123:8123"
+export HASSBRIDGE_ENDPOINT="http://192.168.123.123:8123"
 export HASSBRIDGE_TOKEN="<long lived token>"
 ```
 

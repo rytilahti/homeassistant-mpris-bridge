@@ -239,12 +239,7 @@ class HassInterface:
                 _LOGGER.info("Starting main loop")
                 await self.loop()
         except Exception as ex:
-            _LOGGER.error(
-                "Got error during communication, trying to re-connect to %s: %s",
-                self.ws_endpoint,
-                ex,
-                exc_info=True,
-            )
+            _LOGGER.error("Got error during communication: %s", ex, exc_info=False)
             await asyncio.sleep(5)
             await self.start()
 

@@ -21,21 +21,16 @@ It works by by communicating with Home Assistant using its websocket API, and ex
 
 ## I want it right now, but how?!
 
-1. Clone this repository
+1. Install from PyPI, the simplest way is to use [pipx](https://github.com/pypa/pipx). Alternatively, simple clone this repository and run `poetry install`
 
 ```
-$ git clone https://github.com/rytilahti/homeassistant-mpris-bridge
+pipx install homeassistant-mpris-bridge
 ```
 
-2. Install using poetry
+2. Launch `hassbridge`
 
 ```
-$ poetry install
-```
-3. Launch it!
-
-```
-$ hassbridge --endpoint http://192.168.123.123:8123 --token <long lived token>
+hassbridge --endpoint http://192.168.123.123:8123 --token <long lived token>
 ```
 
 Instead of using `--endpoint` and `--token` you can also define the following environment variables to achieve the same:

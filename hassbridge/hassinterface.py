@@ -9,9 +9,8 @@ import logging
 from pprint import pformat as pf
 from urllib.parse import urlparse
 
-from dbus_next.aio import MessageBus
-
 import websockets
+from dbus_next.aio import MessageBus
 
 from .mprismain import MPrisInterface
 from .playerinterface import PlayerInterface

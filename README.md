@@ -6,6 +6,8 @@ This project bridges your Home Assistant instance and your desktop to control me
 
 It works by by communicating with Home Assistant using its websocket API, and exposes media players to your desktop using widely-implemented MPRIS ("Media Player Remote Interfacing Specification") interfaces.
 
+If you are looking for the reverse option (controlling media player on your PC using homeassistant), check out [hassmpris](https://community.home-assistant.io/t/control-your-linux-media-players-from-home-assistant/480543).
+
 ### Features
 
 * Shows information about what's currently being played (artist, album, title, cover art)

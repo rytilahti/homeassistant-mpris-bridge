@@ -126,8 +126,15 @@ class HassInterface:
                 continue
 
             state = item["state"]
-            if state == "playing":
-                _LOGGER.debug("%s is already playing, adding/updating..", entity_id)
+            # Skip media_players that do not have volume level
+            # This can happen, e.g., for grouped players
+            if "volume_level" not in item["attributes"]:
+                continue
+
+            if state in ["playing", "paused"]:
+                _LOGGER.debug(
+                    "%s is already playing/paused, adding/updating..", entity_id
+                )
                 attrs = item["attributes"]
                 attrs["entity_id"] = entity_id
                 await self.update_player(entity_id, item)

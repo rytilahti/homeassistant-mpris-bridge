@@ -44,5 +44,5 @@ known_first_party = "hassbridge"
 known_third_party = ["asyncclick", "dbus_next"]
 
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

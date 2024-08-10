@@ -1,4 +1,5 @@
 """hassbridge cli."""
+
 import logging
 from dataclasses import dataclass
 

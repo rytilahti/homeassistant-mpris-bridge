@@ -3,6 +3,7 @@
 This implements the necessary parts of the homeassistant websocket API to communicate,
 and create/control the dbus interfaces.
 """
+
 import asyncio
 import json
 import logging
@@ -92,6 +93,26 @@ class HassInterface:
             params={"volume_level": volume},
         )
 
+    def schedule_set_shuffle(self, shuffle, entity):
+        """Schedule setting shuffle."""
+        _LOGGER.debug("Scheduling shuffle set to %s on %s", shuffle, entity)
+        self.schedule_execution(
+            self.execute_media_player_command,
+            "shuffle_set",
+            entity,
+            params={"shuffle": shuffle},
+        )
+
+    def schedule_set_repeat(self, repeat, entity):
+        """Schedule setting repeat."""
+        _LOGGER.debug("Scheduling repeat set to %s on %s", repeat, entity)
+        self.schedule_execution(
+            self.execute_media_player_command,
+            "repeat_set",
+            entity,
+            params={"repeat": repeat},
+        )
+
     async def update_player(self, entity, attrs):
         """Update (and create, if needed) the playback information.
 
@@ -100,13 +121,15 @@ class HassInterface:
         """
         if entity not in self._players:
             _LOGGER.info("Found new device, creating an interface for %s" % entity)
-            self._players[entity] = await self.create_interface_for_entity(entity)
+            self._players[entity] = await self.create_interface_for_entity(
+                entity, attrs
+            )
 
         _LOGGER.debug(
             "Updating data for hass player %s: state: %s", entity, attrs["state"]
         )
-        self._players[entity].update_data(attrs)
         _LOGGER.debug("got new state: %s", pf(attrs))
+        self._players[entity].update_data(attrs)
 
     async def handle_event(self, msg):
         """Handle state changed event for media_players."""
@@ -247,16 +270,20 @@ class HassInterface:
                 _LOGGER.info("Starting main loop")
                 await self.loop()
         except Exception as ex:
-            _LOGGER.error("Got error during communication: %s", ex, exc_info=False)
+            _LOGGER.error("Got error during communication: %s", ex, exc_info=True)
             await asyncio.sleep(5)
             await self.start()
 
-    async def create_interface_for_entity(self, player_entity) -> PlayerInterface:
+    async def create_interface_for_entity(
+        self, player_entity, entity
+    ) -> PlayerInterface:
         """Create mpris interfaces for given homeassistant player."""
         bus = await MessageBus().connect()
 
-        interface = MPrisInterface("org.mpris.MediaPlayer2", self)
-        player_interface = PlayerInterface("org.mpris.MediaPlayer2.Player", self)
+        interface = MPrisInterface("org.mpris.MediaPlayer2", self, entity)
+        player_interface = PlayerInterface(
+            "org.mpris.MediaPlayer2.Player", self, entity
+        )
 
         bus.export("/org/mpris/MediaPlayer2", interface)
         bus.export("/org/mpris/MediaPlayer2", player_interface)

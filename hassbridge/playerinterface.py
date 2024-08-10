@@ -1,7 +1,9 @@
 """Player control implementation (org.mpris.MediaPlayer2.Player)."""
+
 import logging
-from typing import TYPE_CHECKING, Dict
+import re
 from enum import IntFlag
+from typing import TYPE_CHECKING
 
 from dbus_next.service import (
     PropertyAccess,
@@ -19,18 +21,58 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
+loop_status_map = {
+    "off": "None",
+    "all": "Playlist",
+    "one": "Track",
+}
+
+
+FLAG_CANSEEK = 2
+FLAG_GOPREVIOUS = 16
+FLAG_GONEXT = 32
+FLAG_SHUFFLE = 32768
+FLAG_REPEAT = 262144
+
+from enum import IntFlag
+
+
+class MediaPlayerEntityFeature(IntFlag):
+    """Supported features of the media player entity."""
+
+    PAUSE = 1
+    SEEK = 2
+    VOLUME_SET = 4
+    VOLUME_MUTE = 8
+    PREVIOUS_TRACK = 16
+    NEXT_TRACK = 32
+
+    TURN_ON = 128
+    TURN_OFF = 256
+    PLAY_MEDIA = 512
+    VOLUME_STEP = 1024
+    SELECT_SOURCE = 2048
+    STOP = 4096
+    CLEAR_PLAYLIST = 8192
+    PLAY = 16384
+    SHUFFLE_SET = 32768
+    SELECT_SOUND_MODE = 65536
+    BROWSE_MEDIA = 131072
+    REPEAT_SET = 262144
+    GROUPING = 524288
+
+
 class PlayerInterface(ServiceInterface):
     """Implementation of org.mpris.MediaPlayer2.Player dbus interface.
 
     Controls homeassistant over its websocket API.
     """
 
-    def __init__(self, name, hass_interface: "HassInterface"):
+    def __init__(self, name, hass_interface: "HassInterface", entity):
         _LOGGER.debug("Initializing %s", name)
         super().__init__(name)
-        self.data: Dict = {}
         self.hass_interface = hass_interface
-        self.entity = None
+        self.update_data(entity)
 
     def update_data(self, data):
         """Update the internals and emit PropertiesChanged for MPRIS listeners."""
@@ -38,13 +80,20 @@ class PlayerInterface(ServiceInterface):
         # flatten data
         self.entity = self.data["entity_id"]
         self.data.update(self.data["attributes"])
+
         _LOGGER.debug("Updating %s, emiting properties changed.", self.entity)
         changed_attrs = {
-            "Metadata": self.Metadata,
             "Position": self.Position,
+            "Metadata": self.Metadata,
             "PlaybackStatus": self.PlaybackStatus,
             "Rate": self.Rate,
+            "Shuffle": self.Shuffle,
+            "LoopStatus": self.LoopStatus,
+            "CanSeek": self.CanSeek,
+            "CanGoNext": self.CanGoNext,
+            "CanGoPrevious": self.CanGoPrevious,
         }
+        _LOGGER.error(changed_attrs)
         self.emit_properties_changed(changed_attrs)
 
     @method()
@@ -161,7 +210,21 @@ class PlayerInterface(ServiceInterface):
     # LoopStatus — s (Loop_Status)
     # Read/Write
     # This property is optional. Clients should handle its absence gracefully.
-    # This property is optional. Clients should handle its absence gracefully.
+    @dbus_property(access=PropertyAccess.READWRITE)
+    def LoopStatus(self) -> "s":  # type: ignore
+        """Return the loop status."""
+        repeat = loop_status_map[self.data.get("repeat", "off")]
+
+        return repeat
+
+    @LoopStatus.setter
+    def LoopStatusSetter(self, repeat: "s"):  # type: ignore
+        """Set volume."""
+        reverse_loop_status_map = {v: k for k, v in loop_status_map.items()}
+
+        self.hass_interface.schedule_set_repeat(
+            reverse_loop_status_map[repeat], self.entity
+        )
 
     # Rate — d (Playback_Rate)
     # Read/Write
@@ -176,11 +239,15 @@ class PlayerInterface(ServiceInterface):
     # Shuffle — b
     # Read/Write
     # This property is optional. Clients should handle its absence gracefully.
-    # TODO: implement write?
-    @dbus_property(access=PropertyAccess.READ)
+    @dbus_property(access=PropertyAccess.READWRITE)
     def Shuffle(self) -> "b":  # type: ignore
         """Return True if shuffle is enabled."""
         return self.data.get("shuffle", False)
+
+    @Shuffle.setter
+    def ShuffleSetter(self, shuffle: "b"):  # type: ignore
+        """Set volume."""
+        self.hass_interface.schedule_set_shuffle(shuffle, self.entity)
 
     # Metadata — a{sv} (Metadata_Map)
     # Read only
@@ -231,7 +298,7 @@ class PlayerInterface(ServiceInterface):
     @dbus_property(access=PropertyAccess.READ)
     def Position(self) -> "x":  # type: ignore
         """Return current media position."""
-        return int(self.data.get("media_position", 0)) * 1_000_000
+        return int(self.data.get("media_position", 0) * 1_000_000)
 
     # MinimumRate — d (Playback_Rate)
     # Read only
@@ -255,7 +322,7 @@ class PlayerInterface(ServiceInterface):
     @dbus_property(access=PropertyAccess.READ)
     def CanGoNext(self) -> "b":  # type: ignore
         """We support playback controls."""
-        return True
+        return bool(self.data["supported_features"] & FLAG_GONEXT)
 
     # CanGoPrevious — b
     # Read only
@@ -263,7 +330,7 @@ class PlayerInterface(ServiceInterface):
     @dbus_property(access=PropertyAccess.READ)
     def CanGoPrevious(self) -> "b":  # type: ignore
         """We support playback controls."""
-        return True
+        return bool(self.data["supported_features"] & FLAG_GOPREVIOUS)
 
     # CanPlay — b
     # Read only
@@ -290,7 +357,7 @@ class PlayerInterface(ServiceInterface):
     @dbus_property(access=PropertyAccess.READ)
     def CanSeek(self) -> "b":  # type: ignore
         """We support playback controls."""
-        return True
+        return bool(self.data["supported_features"] & FLAG_CANSEEK)
 
     # CanControl — b
     # Read only

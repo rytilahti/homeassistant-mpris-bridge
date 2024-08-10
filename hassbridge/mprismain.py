@@ -1,4 +1,5 @@
 """Implementation of org.mpris.MediaPlayer2."""
+
 import logging
 
 from dbus_next.service import PropertyAccess, ServiceInterface, dbus_property, method
@@ -9,10 +10,11 @@ _LOGGER = logging.getLogger(__name__)
 class MPrisInterface(ServiceInterface):
     """Implementation of the main org.mpris.MediaPlayer2 interface."""
 
-    def __init__(self, name, hass_interface=None):
-        _LOGGER.debug("Initializing dbus interface %s", name)
+    def __init__(self, name, hass_interface=None, entity=None):
         super().__init__(name)
         self.hass_interface = hass_interface
+        self.identity = entity["attributes"].get("friendly_name", entity)
+        _LOGGER.debug("Initializing dbus interface %s with %s", name, self.identity)
 
     @method()
     def Quit(self):
@@ -31,8 +33,7 @@ class MPrisInterface(ServiceInterface):
     @dbus_property(access=PropertyAccess.READ)
     def Identity(self) -> "s":  # type: ignore
         """Return our identity."""
-        # TODO get friendly_name from self.hass_interface
-        return "Home-assistant bridge"
+        return self.identity
 
     # SupportedUriSchemes — as
     # Read only

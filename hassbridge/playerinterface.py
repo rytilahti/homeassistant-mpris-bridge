@@ -93,7 +93,7 @@ class PlayerInterface(ServiceInterface):
             "CanGoNext": self.CanGoNext,
             "CanGoPrevious": self.CanGoPrevious,
         }
-        _LOGGER.error(changed_attrs)
+        
         self.emit_properties_changed(changed_attrs)
 
     @method()
@@ -256,25 +256,45 @@ class PlayerInterface(ServiceInterface):
     @dbus_property(access=PropertyAccess.READ)
     def Metadata(self) -> "a{sv}":  # type: ignore
         """Return the metadata used by MPRIS players to display what is being played."""
-        cover_url = f'{self.hass_interface.http_endpoint}{self.data.get("entity_picture", None)}'
+        metadata = {}
+        # From the spec:
+        # > The mpris:trackid attribute must always be present, and must be of D-Bus type "o".
+        # > This contains a D-Bus path that uniquely identifies the track within the scope of the playlist.
+        #
+        # We define this just in case some client is using it to detect track changes.
+        # Valid object paths:
+        #  https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path
+        content_id = self.data.get("media_content_id")
+        # not all media players expose content_id, so we fallback to title if necessary
+        if not content_id:
+            content_id = self.data.get("media_title")
+            if content_id is None:
+                _LOGGER.debug("Unable to find content id, assuming no meta data available: %s", self.data)
+                return metadata
+        content_id = re.sub("[^0-9a-zA-Z_]", "_", content_id)
+        metadata["mpris:trackid"] = Variant("o", f"/fi/iki/tpr/hassbridge/{content_id}")
+
         duration = self.data.get("media_duration", 0)
         duration = int(duration) * 1_000_000
+        metadata["mpris:length"] = Variant("x", duration)
 
-        return {
-            # we do not support playlists, so we don't care about track ids.
-            "mpris:trackid": Variant("o", "/fi/iki/tpr/hassbridge/trackiddummy"),
-            "mpris:artUrl": Variant("s", cover_url),
-            "mpris:length": Variant("x", duration),
-            "xesam:artist": Variant(
-                "s", self.data.get("media_artist", "<unavailable artist>")
-            ),
-            "xesam:album": Variant(
-                "s", self.data.get("media_album_name", "<unavailable album>")
-            ),
-            "xesam:title": Variant(
-                "s", self.data.get("media_title", "<unavailable title>")
-            ),
+        xesam_infos = {
+            "media_artist": "xesam:artist",
+            "media_album_name": "xesam:album",
+            "media_title": "xesam:title",
         }
+        for hass_key, xesam_key in xesam_infos.items():
+            val = self.data.get(hass_key)
+            if val is not None:
+                metadata[xesam_key] = Variant("s", val)
+
+        entity_picture = self.data.get("entity_picture")
+        if entity_picture is not None:
+            metadata["mpris:artUrl"] = Variant(
+                "s", f"{self.hass_interface.http_endpoint}{entity_picture}"
+            )
+
+        return metadata
 
     # Volume — d (Volume)
     # Read/Write

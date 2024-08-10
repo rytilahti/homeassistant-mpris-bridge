@@ -34,14 +34,26 @@ pre-commit = "*"
 toml = "*"
 tox = "*"
 
-[tool.isort]
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-line_length = 88
-known_first_party = "hassbridge"
-known_third_party = ["asyncclick", "dbus_next"]
+[tool.ruff.lint]
+select = [
+  "E",  # pycodestyle
+  "D",  # pydocstyle
+  "F",  # pyflakes
+  "UP",  # pyupgrade
+  "B",  # flake8-bugbear
+  "SIM",  # flake8-simplify
+  "FA", # flake8-future-annotations
+  "I",  # isort
+  "S",  # bandit
+]
+ignore = [
+  "F821",  # undefined names for dbus types
+  "F722",  # syntax error for multi-char dbus types
+  "D105",  # Missing docstring in magic method
+  "D107",  # Missing docstring in `__init__`
+  "E501",  # line-to-longs due to spec c&p
+]
+
 
 [build-system]
 requires = ["poetry-core"]

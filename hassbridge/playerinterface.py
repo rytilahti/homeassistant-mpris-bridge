@@ -1,6 +1,7 @@
 """Player control implementation (org.mpris.MediaPlayer2.Player)."""
 import logging
 from typing import TYPE_CHECKING, Dict
+from enum import IntFlag
 
 from dbus_next.service import (
     PropertyAccess,
@@ -32,7 +33,7 @@ class PlayerInterface(ServiceInterface):
         self.entity = None
 
     def update_data(self, data):
-        """Update the internal data structure and emit PropertiesChanged for MPRIS listeners."""
+        """Update the internals and emit PropertiesChanged for MPRIS listeners."""
         self.data = data
         # flatten data
         self.entity = self.data["entity_id"]

@@ -7,7 +7,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class MPrisInterface(ServiceInterface):
-    """This class is responsible for the main org.mpris.MediaPlayer2 interface."""
+    """Implementation of the main org.mpris.MediaPlayer2 interface."""
 
     def __init__(self, name, hass_interface=None):
         _LOGGER.debug("Initializing dbus interface %s", name)

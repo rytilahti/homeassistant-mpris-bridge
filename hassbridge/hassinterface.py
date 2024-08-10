@@ -218,6 +218,8 @@ class HassInterface:
                     raise Exception(
                         "Unknown response/invalid token: %s" % auth_response
                     )
+            else:
+                raise Exception(f"Unexpected type: {res.json['type']}")
 
     async def start(self):
         """Connect to homeassistant and start the communication loop."""

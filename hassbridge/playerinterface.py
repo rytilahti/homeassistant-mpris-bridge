@@ -279,7 +279,6 @@ class PlayerInterface(ServiceInterface):
         metadata["mpris:length"] = Variant("x", duration)
 
         xesam_infos = {
-            "media_artist": "xesam:artist",
             "media_album_name": "xesam:album",
             "media_title": "xesam:title",
         }
@@ -287,6 +286,10 @@ class PlayerInterface(ServiceInterface):
             val = self.data.get(hass_key)
             if val is not None:
                 metadata[xesam_key] = Variant("s", val)
+
+        artist = self.data.get("media_artist")
+        if artist is not None:
+            metadata["xesam:artist"] = Variant("as", [artist])
 
         entity_picture = self.data.get("entity_picture")
         if entity_picture is not None:

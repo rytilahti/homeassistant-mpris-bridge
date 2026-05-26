@@ -26,7 +26,7 @@ class HassInterface:
         self.ws = None
         self.http_endpoint = endpoint
         parsed = urlparse(self.http_endpoint)
-        self.ws_endpoint = parsed._replace(scheme="ws", path="/api/websocket").geturl()
+        self.ws_endpoint = parsed._replace(scheme="wss" if parsed.scheme == "https" else "ws", path="/api/websocket").geturl()
 
         self._token = token
 

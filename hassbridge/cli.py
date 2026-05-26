@@ -16,17 +16,19 @@ class Settings:
 
     endpoint: str
     token: str
+    entity_ids: list[str]
     debug: bool = False
 
 
 @click.group(invoke_without_command=True)
-@click.option("--endpoint", required=False, envvar="HASSBRIDGE_ENDPOINT")
-@click.option("--token", required=False, envvar="HASSBRIDGE_TOKEN")
+@click.option("--endpoint", required=True, envvar="HASSBRIDGE_ENDPOINT")
+@click.option("--token", required=True, envvar="HASSBRIDGE_TOKEN")
+@click.option("--entity", 'entity_ids', required=False, type=str, multiple=True)
 @click.option("-d", "--debug", is_flag=True)
 @click.pass_context
-async def cli(ctx, endpoint, token, debug):
+async def cli(ctx, endpoint, token, entity_ids, debug):
     """hass-mpris bridge."""
-    ctx.obj = Settings(endpoint=endpoint, token=token, debug=debug)
+    ctx.obj = Settings(endpoint=endpoint, token=token, entity_ids=entity_ids, debug=debug)
 
     if ctx.invoked_subcommand is None:
         await ctx.invoke(start)
@@ -54,7 +56,7 @@ async def start(ctx):
 
     logging.info("Endpoint: %s" % settings.endpoint)
 
-    h = HassInterface(settings.endpoint, settings.token)
+    h = HassInterface(settings.endpoint, settings.token, settings.entity_ids)
 
     await h.start()
 

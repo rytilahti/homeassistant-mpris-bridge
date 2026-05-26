@@ -22,13 +22,15 @@ _LOGGER = logging.getLogger(__name__)
 class HassInterface:
     """Hass API interface, implements necessary parts of the websocket API."""
 
-    def __init__(self, endpoint, token):
+    def __init__(self, endpoint, token, entity_ids):
         self.ws = None
         self.http_endpoint = endpoint
         parsed = urlparse(self.http_endpoint)
         self.ws_endpoint = parsed._replace(scheme="wss" if parsed.scheme == "https" else "ws", path="/api/websocket").geturl()
 
         self._token = token
+
+        self.entity_ids = entity_ids
 
         self._id = 0
         self._players = {}
@@ -119,6 +121,10 @@ class HassInterface:
         This gets called with the HASS API provided data during the
         initial state fetching, as well as for state change events.
         """
+        if self.entity_ids and entity not in self.entity_ids:
+            # Skip this player since it's not an entity we're monitoring
+            return
+
         if entity not in self._players:
             _LOGGER.info("Found new device, creating an interface for %s" % entity)
             self._players[entity] = await self.create_interface_for_entity(

@@ -1,5 +1,6 @@
 """Player control implementation (org.mpris.MediaPlayer2.Player)."""
 
+import urllib.parse
 import logging
 import re
 from enum import IntFlag
@@ -294,7 +295,7 @@ class PlayerInterface(ServiceInterface):
         entity_picture = self.data.get("entity_picture")
         if entity_picture is not None:
             metadata["mpris:artUrl"] = Variant(
-                "s", f"{self.hass_interface.http_endpoint}{entity_picture}"
+                "s", urllib.parse.urljoin(self.hass_interface.http_endpoint, entity_picture)
             )
 
         return metadata

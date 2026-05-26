@@ -20,8 +20,8 @@ class Settings:
 
 
 @click.group(invoke_without_command=True)
-@click.option("--endpoint", required=False, envvar="HASSBRIDGE_ENDPOINT")
-@click.option("--token", required=False, envvar="HASSBRIDGE_TOKEN")
+@click.option("--endpoint", required=True, envvar="HASSBRIDGE_ENDPOINT")
+@click.option("--token", required=True, envvar="HASSBRIDGE_TOKEN")
 @click.option("-d", "--debug", is_flag=True)
 @click.pass_context
 async def cli(ctx, endpoint, token, debug):
